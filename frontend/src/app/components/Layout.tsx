@@ -140,9 +140,10 @@ export function Layout({ children }: LayoutProps) {
         className={`
           relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors
           ${active
-            ? 'bg-gray-100 text-foreground font-medium'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }
+  ? 'bg-gray-100 text-black font-medium dark:bg-gray-600 dark:text-white'
+  : 'text-muted-foreground hover:bg-gray-100  hover:text-black dark:hover:bg-gray-700 dark:hover:text-white'
+}
+
         `}
       >
         {active && (
