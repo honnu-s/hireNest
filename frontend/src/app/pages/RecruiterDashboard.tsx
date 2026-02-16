@@ -144,11 +144,7 @@ export function RecruiterDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="jobs">My Jobs</TabsTrigger>
-            <TabsTrigger value="candidates">Candidates</TabsTrigger>
-          </TabsList>
+          
 
           {/* ================= DASHBOARD ================= */}
           <TabsContent value="dashboard" className="space-y-6">

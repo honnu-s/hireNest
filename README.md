@@ -161,4 +161,8 @@ This project focuses on:
 Built and maintained by Honnu
 
 
+<<<<<<< HEAD
 ---
+=======
+
+>>>>>>> d34953b (Added readme and screenshots)
