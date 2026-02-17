@@ -8,11 +8,11 @@ const recruiterRoutes = require("./src/routes/recruiter");
 const candidateRoutes = require("./src/routes/candidate");
 const auditLogs=require("./src/routes/audit");
 const app = express();
-
+const helmet=require("helmet");
 
 app.use(cors());
 app.use(express.json());
-
+app.use(helmet());
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 

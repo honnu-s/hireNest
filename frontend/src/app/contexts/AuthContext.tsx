@@ -20,8 +20,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// API base URL
-const API_URL = 'http://localhost:5000/api';
 
 
 
@@ -42,29 +40,27 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
+    const message = error.response?.data?.message;
     const requestUrl = error.config?.url;
 
     const isAuthRoute =
       requestUrl?.includes('/auth/signin') ||
       requestUrl?.includes('/auth/signup');
 
-    if (status === 401 && !isAuthRoute) {
-      const currentPath = window.location.pathname;
-
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('role');
-      localStorage.removeItem('email');
-      localStorage.removeItem('name');
-
-      if (currentPath !== '/signin') {
-        window.location.href = '/signin';
-      }
+    if (
+      status === 401 &&
+      !isAuthRoute &&
+      (message === 'Invalid token' ||
+        message === 'Token expired')
+    ) {
+      localStorage.clear();
+      window.location.href = '/signin';
     }
 
     return Promise.reject(error);
   }
 );
+
 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
