@@ -1,125 +1,61 @@
 import { useData, type ActionType } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import {
-  Plus,
-  Edit,
-  Trash2,
-  UserPlus,
-  RefreshCw,
-  Activity
-} from 'lucide-react';
+import { Plus, Edit, Trash2, UserPlus, RefreshCw, Activity } from 'lucide-react';
 
-const actionIcons: Record<ActionType, any> = {
-  create: Plus,
-  update: Edit,
-  delete: Trash2,
-  assign: UserPlus,
-  status_change: RefreshCw
+const icons = { create: Plus, update: Edit, delete: Trash2, assign: UserPlus, status_change: RefreshCw };
+const iconCls: Record<ActionType, string> = {
+  create: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/10 dark:text-emerald-400',
+  update: 'bg-blue-100 text-blue-600 dark:bg-blue-900/10 dark:text-blue-400',
+  delete: 'bg-red-100 text-red-600 dark:bg-red-900/10 dark:text-red-400',
+  assign: 'bg-violet-100 text-violet-600 dark:bg-violet-900/10 dark:text-violet-400',
+  status_change: 'bg-amber-100 text-amber-600 dark:bg-amber-900/10 dark:text-amber-400',
 };
-
-const actionColors: Record<ActionType, string> = {
-  create: 'text-green-600 dark:text-green-400',
-  update: 'text-blue-600 dark:text-blue-400',
-  delete: 'text-red-600 dark:text-red-400',
-  assign: 'text-purple-600 dark:text-purple-400',
-  status_change: 'text-orange-600 dark:text-orange-400'
+const labels: Record<ActionType, string> = {
+  create: 'Created', update: 'Updated', delete: 'Deleted', assign: 'Assigned', status_change: 'Status changed',
+};
+const timeAgo = (ts: string | Date) => {
+  const d = new Date(ts), diff = Date.now() - d.getTime(), m = Math.floor(diff/60000);
+  if (m < 1) return 'Just now'; if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m/60); if (h < 24) return `${h}h ago`;
+  const day = Math.floor(h/24); if (day < 7) return `${day}d ago`;
+  return d.toLocaleDateString();
 };
 
 export function RecentActionsWidget() {
   const { auditLogs } = useData();
-  const { user } = useAuth();
-
-  const relevantLogs = auditLogs.slice(0, 5);
-
-
-  const formatTimeAgo = (timestamp: string | Date) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-
-    const mins = Math.floor(diffMs / 60000);
-    const hrs = Math.floor(diffMs / 3600000);
-    const days = Math.floor(diffMs / 86400000);
-
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
-    if (hrs < 24) return `${hrs}h ago`;
-    if (days < 7) return `${days}d ago`;
-
-    return date.toLocaleDateString();
-  };
-
-  const getActionLabel = (action: ActionType) => {
-    const labels: Record<ActionType, string> = {
-      create: 'Created',
-      update: 'Updated',
-      delete: 'Deleted',
-      assign: 'Assigned',
-      status_change: 'Status Changed'
-    };
-    return labels[action];
-  };
+  const logs = auditLogs.slice(0, 5);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="w-5 h-5" />
-          Recent Actions
-        </CardTitle>
-        <CardDescription>Your recent activities</CardDescription>
-      </CardHeader>
-
-      <CardContent>
-        <div className="space-y-4">
-          {relevantLogs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No recent actions
-            </p>
-          ) : (
-            relevantLogs.map(log => {
-              const ActionIcon = actionIcons[log.actionType] ?? Activity;
-
-              return (
-                <div
-                  key={log.id}
-                  className="flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0"
-                >
-                  <div
-                    className={`p-2 rounded-lg bg-muted mt-0.5 ${actionColors[log.actionType]}`}
-                  >
-                    <ActionIcon className="w-4 h-4" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-medium truncate">
-                          {log.entityName}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {getActionLabel(log.actionType)} by you
-                        </p>
-                      </div>
-
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatTimeAgo(log.timestamp)}
-                      </span>
-                    </div>
-
-                    {log.details && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                        {log.details}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
+    <div className="ats-card">
+      <div className="flex items-center gap-2 px-6 py-4 border-b border-border">
+        
+        <div>
+          <h3 className="text-sm font-semibold" style={{fontFamily:'Syne,sans-serif'}}>Recent Actions</h3>
+          <p className="text-xs text-muted-foreground">Your latest activities</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="divide-y divide-border/50">
+        {logs.length === 0 ? (
+          <div className="px-6 py-10 text-center">
+            <Activity className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2"/>
+            <p className="text-sm text-muted-foreground">No recent actions</p>
+          </div>
+        ) : logs.map(log => {
+          const Icon = icons[log.actionType];
+          return (
+            <div key={log.id} className="flex items-start gap-4 px-6 py-3.5 hover:bg-muted/20 transition-colors">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${iconCls[log.actionType]}`}>
+                <Icon className="w-3.5 h-3.5"/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{log.entityName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{labels[log.actionType]} by {log.performedByName}</p>
+                {log.details && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 ">{log.details}</p>}
+              </div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">{timeAgo(log.timestamp)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

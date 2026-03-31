@@ -5,133 +5,132 @@ import { MetricCard } from '../components/MetricCard';
 import { JobsTable } from '../components/admin/JobsTable';
 import { RecruitersTable } from '../components/admin/RecruitersTable';
 import { CandidatesTable } from '../components/admin/CandidatesTable';
-import { useData } from '../contexts/DataContext';
-import { Briefcase, Users, UserCircle } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import api from '../../lib/api';
 import { RecentActivityCard } from '../components/admin/RecentActivityCard';
+import { Briefcase, Users, UserCircle, TrendingUp } from 'lucide-react';
+import api from '../../lib/api';
 
 type TabValue = 'dashboard' | 'jobs' | 'recruiters' | 'candidates';
+const TABS: { value: TabValue; label: string }[] = [
+  { value: 'dashboard', label: 'Overview' },
+  { value: 'jobs', label: 'Jobs' },
+  { value: 'recruiters', label: 'Recruiters' },
+  { value: 'candidates', label: 'Candidates' },
+];
 
 export function AdminDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [stats, setStats] = useState({
-    totalJobs: 0,
-    openJobs: 0,
-    totalRecruiters: 0,
-    activeRecruiters: 0,
-    totalCandidates: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  
   const tabParam = searchParams.get('tab') as TabValue | null;
   const [activeTab, setActiveTab] = useState<TabValue>(tabParam || 'dashboard');
+  const [stats, setStats] = useState({ totalJobs: 0, openJobs: 0, totalRecruiters: 0, activeRecruiters: 0, totalCandidates: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await api.get('/admin/dashboard/stats');
-        setStats(response.data);
-      } catch (err) {
-        console.error('Error fetching stats:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
- }, []);
+    api.get('/admin/dashboard/stats').then(r => setStats(r.data)).catch(console.error).finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    if (tabParam && ['dashboard', 'jobs', 'recruiters', 'candidates'].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
+    if (tabParam && TABS.some(t => t.value === tabParam)) setActiveTab(tabParam);
   }, [tabParam]);
 
-  const handleTabChange = (value: string) => {
-    const newTab = value as TabValue;
-    setActiveTab(newTab);
-    if (newTab === 'dashboard') {
-      setSearchParams({});
-    } else {
-      setSearchParams({ tab: newTab });
-    }
+  const handleTabChange = (v: TabValue) => {
+    setActiveTab(v);
+    v === 'dashboard' ? setSearchParams({}) : setSearchParams({ tab: v });
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading...</div>
-        </div>
-      </Layout>
-    );
-  }
+  if (loading) return (
+    <Layout>
+      <div className="flex items-center justify-center h-64 gap-3 text-muted-foreground">
+        <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        Loading dashboard…
+      </div>
+    </Layout>
+  );
 
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-semibold pb-8">Admin Dashboard</h1>
-        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
 
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          
+  {/* Left Section */}
+  <div>
+    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+      Admin Dashboard
+    </h1>
+    <p className="text-sm text-muted-foreground mt-1">
+      Manage your hiring pipeline from one place
+    </p>
+  </div>
 
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+  {/* Tabs */}
+  <div className="flex items-center gap-1 p-1.5 rounded-xl bg-background border border-border shadow-sm backdrop-blur-md">
+
+    {TABS.map((t) => {
+      const active = activeTab === t.value;
+
+      return (
+        <button
+          key={t.value}
+          onClick={() => handleTabChange(t.value)}
+          className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200
+            ${active
+              ? 'bg-indigo-100 text-indigo-400 shadow-outer'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            }`}
+        >
+          {t.label}
+
+        
+        </button>
+      );
+    })}
+
+  </div>
+</div>
+
+        {/* DASHBOARD TAB */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6 animate-fade-in-up">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <MetricCard
-                iconBgClass="bg-emerald-500/16 dark:bg-emerald-400/20"
-                iconColorClass="text-emerald-800 dark:text-emerald-400"
                 title="Total Jobs"
                 value={stats.totalJobs}
                 icon={Briefcase}
                 description={`${stats.openJobs} open positions`}
+                iconBgClass="bg-indigo-100 dark:bg-indigo-900/10"
+                iconColorClass="text-indigo-600 dark:text-indigo-400"
+                className="animate-delay-1"
               />
               <MetricCard
-                title="Total Recruiters"
+                title="Recruiters"
                 value={stats.totalRecruiters}
                 icon={Users}
                 description={`${stats.activeRecruiters} active`}
-                iconBgClass="bg-blue-500/15 dark:bg-blue-400/20"
-  iconColorClass="text-blue-800 dark:text-blue-400"
+                iconBgClass="bg-violet-100 dark:bg-violet-900/10"
+                iconColorClass="text-violet-600 dark:text-violet-400"
+                className="animate-delay-2"
               />
               <MetricCard
                 title="Total Candidates"
                 value={stats.totalCandidates}
                 icon={UserCircle}
-                description="All applications"
-                iconBgClass="bg-pink-500/15 dark:bg-pink-400/20"
-  iconColorClass="text-pink-800 dark:text-pink-400"
+                description="All time applications"
+                iconBgClass="bg-emerald-100 dark:bg-emerald-900/10"
+                iconColorClass="text-emerald-600 dark:text-emerald-400"
+                className="animate-delay-3"
               />
             </div>
-            <RecentActivityCard/>
+            <div className="animate-fade-in-up animate-delay-2">
+              <RecentActivityCard />
+            </div>
+          </div>
+        )}
 
-            {/* Quick Overview */}
-            {/* <div className="grid gap-6 lg:grid-cols-2 mt-8">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Recent Jobs</h3>
-                <JobsTable limit={5} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Recent Candidates</h3>
-                <CandidatesTable limit={5} />
-              </div>
-            </div> */}
-          </TabsContent>
-
-          <TabsContent value="jobs">
-            <JobsTable />
-          </TabsContent>
-
-          <TabsContent value="recruiters">
-            <RecruitersTable />
-          </TabsContent>
-
-          <TabsContent value="candidates">
-            <CandidatesTable />
-          </TabsContent>
-        </Tabs>
+        {activeTab === 'jobs' && <div className="animate-fade-in-up"><JobsTable /></div>}
+        {activeTab === 'recruiters' && <div className="animate-fade-in-up"><RecruitersTable /></div>}
+        {activeTab === 'candidates' && <div className="animate-fade-in-up"><CandidatesTable /></div>}
       </div>
     </Layout>
   );

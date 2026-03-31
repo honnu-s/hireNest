@@ -3,28 +3,23 @@ import { useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from './ui/button';
-import { 
-  LayoutDashboard, 
-  Briefcase, 
-  Users, 
-  UserCircle, 
-  LogOut, 
-  Menu, 
-  X, 
-  Sun, 
+import {
+  LayoutDashboard,
+  Briefcase,
+  Users,
+  UserCircle,
+  LogOut,
+  Menu,
+  X,
+  Sun,
   Moon,
-  Search 
+  Search,
+  ChevronRight,
+  Zap,
 } from 'lucide-react';
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-interface NavItem {
-  label: string;
-  path: string;
-  icon: ReactNode;
-}
+interface LayoutProps { children: ReactNode; }
+interface NavItem { label: string; path: string; icon: ReactNode; }
 
 export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,163 +28,145 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/signin');
-  };
+  const handleLogout = () => { logout(); navigate('/signin'); };
 
   const getNavItems = (): NavItem[] => {
-    
-    if (user?.role === 'admin') {
-      return [
-        { label: 'Dashboard', path: '/admin?tab=dashboard', icon: <LayoutDashboard className="w-5 h-5 hover:bg-zinc-100" /> },
-        { label: 'Jobs', path: '/admin?tab=jobs', icon: <Briefcase className="w-5 h-5 hover:bg-zinc-100" /> },
-        { label: 'Recruiters', path: '/admin?tab=recruiters', icon: <Users className="w-5 h-5 hover:bg-zinc-100" /> },
-        { label: 'Candidates', path: '/admin?tab=candidates', icon: <UserCircle className="w-5 h-5 hover:bg-zinc-100" /> },
-      ];
-    } else if (user?.role === 'recruiter') {
-      return [
-        { label: 'Dashboard', path: '/recruiter?tab=dashboard', icon: <LayoutDashboard className="w-5 h-5 hover:bg-zinc-100" /> },
-        { label: 'My Jobs', path: '/recruiter?tab=jobs', icon: <Briefcase className="w-5 h-5 hover:bg-zinc-100" /> },
-        { label: 'Candidates', path: '/recruiter?tab=candidates', icon: <UserCircle className="w-5 h-5 hover:bg-zinc-100" /> },
-      ];
-    } else {
-      return [
-        { label: 'Dashboard', path: '/candidate?tab=dashboard', icon: <LayoutDashboard className="w-5 h-5 hover:bg-zinc-100" /> },
-        { label: 'Apply to Jobs', path: '/candidate?tab=apply-jobs', icon: <Search className="w-5 h-5 hover:bg-zinc-100" /> },
-        { label: 'My Applications', path: '/candidate?tab=applications', icon: <Briefcase className="w-5 h-5 hover:bg-zinc-100" /> },
-      ];
-    }
-  };
-
-  const navItems = getNavItems();
-
-  const handleNavigation = (path: string) => {
-    navigate(path);
-    setSidebarOpen(false);
+    if (user?.role === 'admin') return [
+      { label: 'Overview',    path: '/admin?tab=dashboard',  icon: <LayoutDashboard className="w-4 h-4" /> },
+      { label: 'Jobs',        path: '/admin?tab=jobs',       icon: <Briefcase className="w-4 h-4" /> },
+      { label: 'Recruiters',  path: '/admin?tab=recruiters', icon: <Users className="w-4 h-4" /> },
+      { label: 'Candidates',  path: '/admin?tab=candidates', icon: <UserCircle className="w-4 h-4" /> },
+    ];
+    if (user?.role === 'recruiter') return [
+      { label: 'Overview',    path: '/recruiter?tab=dashboard',  icon: <LayoutDashboard className="w-4 h-4" /> },
+      { label: 'My Jobs',     path: '/recruiter?tab=jobs',       icon: <Briefcase className="w-4 h-4" /> },
+      { label: 'Candidates',  path: '/recruiter?tab=candidates', icon: <UserCircle className="w-4 h-4" /> },
+    ];
+    return [
+      { label: 'Overview',         path: '/candidate?tab=dashboard',  icon: <LayoutDashboard className="w-4 h-4" /> },
+      { label: 'Browse Jobs',      path: '/candidate?tab=apply-jobs', icon: <Search className="w-4 h-4" /> },
+      { label: 'My Applications',  path: '/candidate?tab=applications', icon: <Briefcase className="w-4 h-4" /> },
+    ];
   };
 
   const isActive = (path: string) => {
     if (path.includes('?tab=')) {
-      const [basePath, query] = path.split('?');
-      return location.pathname === basePath && location.search.includes(query.split('=')[1]);
+      const [base, q] = path.split('?');
+      return location.pathname === base && location.search.includes(q.split('=')[1]);
     }
     return location.pathname === path && !location.search;
   };
 
+  const navItems = getNavItems();
+  const handleNav = (path: string) => { navigate(path); setSidebarOpen(false); };
+
+  const roleLabel = user?.role === 'admin' ? 'Administrator' : user?.role === 'recruiter' ? 'Recruiter' : 'Candidate';
+  const roleColor = user?.role === 'admin' ? 'bg-blue-500/20 text-blue-300' : user?.role === 'recruiter' ? 'bg-violet-500/20 text-violet-300' : 'bg-blue-500/20 text-blue-300';
+
+  const Sidebar = () => (
+<div className="sidebar flex flex-col h-full bg-gradient-to-b from-[#0f172a] to-[#020617]">      {/* Logo */}
+      <div className="h-16 flex items-center gap-3 px-5 border-b border-white/5">
+        <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <Zap className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <span className="font-bold text-white text-sm tracking-tight" >
+            HireFlow
+          </span>
+          <p className="text-[10px] text-white/60 -mt-0.5">ATS Platform</p>
+        </div>
+      </div>
+
+      {/* User Card */}
+      <div className="mx-3 mt-4 mb-2 p-3 rounded-xl bg-white/5 border border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-semibold text-sm flex-shrink-0" >
+            {user?.name?.[0]?.toUpperCase() ?? 'U'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white truncate">{user?.name}</p>
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${roleColor}`}>
+              {roleLabel}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/20 px-3 pb-2 pt-1">
+          Navigation
+        </p>
+        {navItems.map((item) => {
+          const active = isActive(item.path);
+          return (
+            <button
+              key={item.path}
+              onClick={() => handleNav(item.path)}
+              className={`sidebar-nav-item w-full ${active ? 'active' : ''}`}
+            >
+              <span className="nav-indicator" />
+              <span className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
+                active ? 'bg-indigo-500/20 text-indigo-400' : 'text-white/30'
+              }`}>
+                {item.icon}
+              </span>
+              <span className="flex-1 text-left text-white/60 text-[17px]">{item.label}</span>
+              {active && <ChevronRight className="w-3.5 h-3.5 opacity-50" />}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-white/5 space-y-1">
+        <button
+          onClick={toggleTheme}
+          className="sidebar-nav-item w-full"
+        >
+          {theme === 'light'
+            ? <><Moon className="w-4 h-4" /><span className="text-[13px]">Dark Mode</span></>
+            : <><Sun className="w-4 h-4" /><span className="text-[13px]">Light Mode</span></>
+          }
+        </button>
+        <button
+          onClick={handleLogout}
+          className="sidebar-nav-item w-full !text-red-400 hover:!bg-red-500/10"
+        >
+          <LogOut className="w-4 h-4" />
+          <span className="text-[13px]">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-card border-b border-border flex items-center justify-between px-4 z-40">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <Briefcase className="w-5 h-5 text-primary-foreground" />
+      {/* Mobile top bar */}
+<div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-border flex items-center justify-between px-4 z-40">        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-indigo-500 flex items-center justify-center">
+            <Zap className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="font-semibold">ATS</span>
+          <span className="font-bold text-sm" >TalentFlow</span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </Button>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-muted transition-colors">
+          {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </button>
       </div>
 
       {sidebarOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside
-        className={`
-          fixed top-0 left-0 h-full w-64 bg-card border-r border-border z-50 transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0
-        `}
-      >
-        <div className="flex flex-col h-full">
-          <div className="h-16 flex items-center gap-3 px-6 border-b border-border">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-primary" />
-            </div>
-            <span className="font-semibold">ATS System</span>
-          </div>
-
-          <div className="px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <UserCircle className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.name}</p>
-                <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
-              </div>
-            </div>
-          </div>
-
-          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-  {navItems.map((item) => {
-    const active = isActive(item.path);
-
-    return (
-      <button
-        key={item.path}
-        onClick={() => handleNavigation(item.path)}
-        className={`
-          relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors
-          ${active
-  ? 'bg-gray-100 text-black font-medium dark:bg-gray-600 dark:text-white'
-  : 'text-muted-foreground hover:bg-gray-100  hover:text-black dark:hover:bg-gray-700 dark:hover:text-white'
-}
-
-        `}
-      >
-        {active && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r bg-primary" />
-        )}
-
-        {item.icon}
-        <span>{item.label}</span>
-      </button>
-    );
-  })}
-</nav>
-
-
-          <div className="p-3 border-t border-border space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={toggleTheme}
-            >
-              {theme === 'light' ? (
-                <>
-                  <Moon className="w-4 h-4 mr-2" />
-                  Dark Mode
-                </>
-              ) : (
-                <>
-                  <Sun className="w-4 h-4 mr-2" />
-                  Light Mode
-                </>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
+      {/* Sidebar */}
+      <aside className={`fixed top-0 left-0 h-full w-60 z-50 transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <Sidebar />
       </aside>
 
-      <main className="lg:pl-64 pt-16 lg:pt-0">
-        <div className="p-4 lg:p-8">
+      {/* Main */}
+      <main className="lg:pl-60 pt-14 lg:pt-0">
+        <div className="min-h-screen p-5 lg:p-8 max-w-[1400px]">
           {children}
         </div>
       </main>

@@ -1,19 +1,14 @@
-import { Card, CardContent } from './ui/card';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
-  trend?: {
-    value: string;
-    positive: boolean;
-  };
+  trend?: { value: string; positive: boolean };
   description?: string;
-
-  /** NEW */
   iconBgClass?: string;
   iconColorClass?: string;
+  className?: string;
 }
 
 export function MetricCard({
@@ -22,42 +17,42 @@ export function MetricCard({
   icon: Icon,
   trend,
   description,
-  iconBgClass = 'bg-primary/10',
-  iconColorClass = 'text-primary',
+  iconBgClass = 'bg-indigo-100 dark:bg-indigo-500/15',
+  iconColorClass = 'text-indigo-600 dark:text-indigo-400',
+  className = '',
 }: MetricCardProps) {
   return (
-    <Card className="rounded-none">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
+    <div className={`metric-card animate-fade-in-up group ${className}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            {title}
+          </p>
+          <p className="text-3xl font-bold tracking-tight text-foreground" >
+            {value}
+          </p>
 
-            <p className="text-3xl font-semibold mt-2">{value}</p>
+          {description && (
+            <p className="text-xs text-muted-foreground mt-1.5">{description}</p>
+          )}
 
-            {description && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {description}
-              </p>
-            )}
-
-            {trend && (
-              <p
-                className={`text-sm mt-2 ${
-                  trend.positive ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {trend.positive ? '↑' : '↓'} {trend.value}
-              </p>
-            )}
-          </div>
-
-          <div
-            className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconBgClass}`}
-          >
-            <Icon className={`w-6 h-6 ${iconColorClass}`} />
-          </div>
+          {trend && (
+            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${
+              trend.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+            }`}>
+              {trend.positive
+                ? <TrendingUp className="w-3 h-3" />
+                : <TrendingDown className="w-3 h-3" />
+              }
+              <span>{trend.value}</span>
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105 ${iconBgClass}`}>
+          <Icon className={`w-5 h-5 ${iconColorClass}`} />
+        </div>
+      </div>
+    </div>
   );
 }

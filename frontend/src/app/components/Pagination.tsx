@@ -1,5 +1,4 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from './ui/button';
 
 interface PaginationProps {
   currentPage: number;
@@ -12,82 +11,55 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
 
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
-    const showPages = 5; 
-
-    if (totalPages <= showPages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      [1, 2, 3, 4, '...', totalPages].forEach(p => pages.push(p));
+    } else if (currentPage >= totalPages - 2) {
+      [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages].forEach(p => pages.push(p));
     } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push('...');
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
-        pages.push('...');
-        pages.push(totalPages);
-      }
+      [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages].forEach(p => pages.push(p));
     }
-
     return pages;
   };
 
+  const btnBase = 'h-8 w-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-150';
+
   return (
-    <div className="flex items-center justify-center gap-2 mt-6 mb-4">
-      <Button
-        variant="outline"
-        size="icon"
+    <div className="flex items-center justify-center gap-1 py-4">
+      <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="h-8 w-8"
+        className={`${btnBase} border border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed`}
       >
         <ChevronLeft className="h-4 w-4" />
-      </Button>
+      </button>
 
-      {getPageNumbers().map((page, index) => {
-        if (page === '...') {
-          return (
-            <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">
-              ...
-            </span>
-          );
-        }
-
-        return (
-          <Button
+      {getPageNumbers().map((page, i) =>
+        page === '...' ? (
+          <span key={`e-${i}`} className="w-8 text-center text-muted-foreground text-sm">…</span>
+        ) : (
+          <button
             key={page}
-            variant={currentPage === page ? 'default' : 'outline'}
-            size="icon"
             onClick={() => onPageChange(page as number)}
-            className="h-8 w-8"
+            className={`${btnBase} ${
+              currentPage === page
+                ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25'
+                : 'border border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
           >
             {page}
-          </Button>
-        );
-      })}
+          </button>
+        )
+      )}
 
-      <Button
-        variant="outline"
-        size="icon"
+      <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="h-8 w-8"
+        className={`${btnBase} border border-border text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed`}
       >
         <ChevronRight className="h-4 w-4" />
-      </Button>
+      </button>
     </div>
   );
 }
