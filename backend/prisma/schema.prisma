@@ -82,7 +82,7 @@ model Recruiter {
   updatedAt  DateTime        @updatedAt
 
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobAssignments    JobAssignment[]    // Many-to-many with jobs
+  jobAssignments    JobAssignment[]
   
   @@index([department])
   @@index([status])
@@ -90,13 +90,14 @@ model Recruiter {
 }
 
 model Candidate {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  name        String
-  phone       String
-  resumeUrl   String?  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  name            String
+  phone           String
+  resumeUrl       String?  // Cloudinary secure_url — direct viewable/downloadable link
+  resumePublicId  String?  // Cloudinary public_id — needed to delete/replace old file
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   applications Application[] 
@@ -135,7 +136,7 @@ model JobAssignment {
   job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
   recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
 
-  @@unique([jobId, recruiterId]) // Prevent duplicate assignments
+  @@unique([jobId, recruiterId])
   @@index([jobId])
   @@index([recruiterId])
   @@map("job_assignments")
@@ -160,6 +161,7 @@ model Application {
   @@index([appliedDate])
   @@map("applications")
 }
+
 model AuditLog {
   id              String   @id @default(uuid())
   actionType      String

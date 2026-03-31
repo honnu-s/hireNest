@@ -374,6 +374,49 @@ router.post("/jobs/:jobId/assign", validateJobAssignment, async (req, res) => {
   }
 });
 
+const https = require("https");
+const http  = require("http");
+
+router.get("/candidates/:candidateId/resume/download", async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({
+      where:  { id: req.params.candidateId },
+      select: { resumeUrl: true, name: true },
+    });
+
+    if (!candidate?.resumeUrl) {
+      return res.status(404).json({ message: "No resume on file for this candidate" });
+    }
+
+    const getter = candidate.resumeUrl.startsWith("https") ? https : http;
+
+    getter.get(candidate.resumeUrl, (cloudRes) => {
+      if (cloudRes.statusCode !== 200) {
+        return res.status(502).json({ message: "Could not fetch resume from storage" });
+      }
+
+      const safeName = (candidate.name || "resume")
+        .replace(/[^a-z0-9 _-]/gi, "")
+        .trim()
+        .replace(/\s+/g, "_") || "resume";
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${safeName}_resume.pdf"`
+      );
+
+      cloudRes.pipe(res);
+    }).on("error", (err) => {
+      console.error("[Resume Download] Fetch error:", err.message);
+      res.status(502).json({ message: "Failed to retrieve resume" });
+    });
+
+  } catch (err) {
+    console.error("[Resume Download] Server error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 
 router.delete("/jobs/:jobId/assign/:recruiterId", async (req, res) => {

@@ -2,8 +2,10 @@ const { Worker } = require('bullmq');
 const prisma = require('../db.cjs');
 
 const redisConnection = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379,
+  url: process.env.REDIS_URL,
+  maxRetriesPerRequest: null, 
+  tls: {}
+
 };
 
 const worker = new Worker(

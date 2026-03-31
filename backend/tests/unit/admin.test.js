@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const adminRouter = require('../../src/routes/admin');
 const prisma = require('../../src/db.cjs');
 
-// Mock audit queue
+
 jest.mock('../../src/queue/auditQueue', () => ({
   addAuditLog: jest.fn(async () => ({ id: 'mock-job' })),
 }));
@@ -15,7 +15,6 @@ const app = express();
 app.use(express.json());
 app.use('/api/admin', adminRouter);
 
-// tests/unit/admin.test.js
 const createAdmin = async () => {
   const timestamp = Date.now();
   const user = await prisma.user.create({
