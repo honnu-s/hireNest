@@ -271,10 +271,6 @@ const fetchCandidates = async (
     }
   };
 
-  // ============================================
-  // RECRUITER OPERATIONS
-  // ============================================
-
   const fetchRecruiterJobs = async (): Promise<Job[]> => {
     try {
       const response = await api.get('/recruiter/jobs');
@@ -295,9 +291,6 @@ const fetchCandidates = async (
     }
   };
 
-  // ============================================
-  // CANDIDATE OPERATIONS
-  // ============================================
 
   const fetchCandidateJobs = async (): Promise<Job[]> => {
     try {
