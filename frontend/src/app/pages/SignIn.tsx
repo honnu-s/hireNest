@@ -178,7 +178,7 @@ export function SignIn() {
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-5">
-          © {new Date().getFullYear()} HireFlow. All rights reserved.
+          © {new Date().getFullYear()} HireNest. All rights reserved.
         </p>
       </div>
     </div>

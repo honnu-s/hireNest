@@ -71,7 +71,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
         <div>
           <span className="font-bold text-white text-sm tracking-tight" >
-            HireFlow
+            HireNest
           </span>
           <p className="text-[10px] text-white/60 -mt-0.5">ATS Platform</p>
         </div>
